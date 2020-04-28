@@ -1,4 +1,5 @@
-#pragma once
+#ifndef EL_SCUTTLED_UNITY_LIGHTING_CGINC
+#define EL_SCUTTLED_UNITY_LIGHTING_CGINC
 
 #include "UnityCG.cginc"
 #include "Lighting.cginc"
@@ -6,16 +7,9 @@
 #include "AutoLight.cginc"              // must be after `UnityPBSLighting` because Unity forgot to include it.
 #include "UnityLightingCommon.cginc"
 #include "UnityStandardCore.cginc"
-#include "ELUnityUtilities.cginc"
 
-/**
- * Wraps `UNITY_TRANSFER_SHADOW` and `UNITY_LIGHT_ATTENUATION` for abusing to use in fragment shader.
- *
- * @param objectPos the position of the vertex in object space.
- * @param worldPos the position of the vertex in world space.
- * @param clipPos the position of the vertex in clip space.
- * @return the light attenuation factor. (0.0 ~ 1.0)
- */
+
+// Wraps `UNITY_TRANSFER_SHADOW` and `UNITY_LIGHT_ATTENUATION` for abusing to use in fragment shader.
 float ELCalculateLightAttenuation(float3 objectPos, float3 worldPos, float4 clipPos)
 {
     // Has to be called `v` because `UNITY_TRANSFER_SHADOW` sucks
@@ -37,15 +31,8 @@ float ELCalculateLightAttenuation(float3 objectPos, float3 worldPos, float4 clip
     return attenuation;
 }
 
-/**
- * Wraps `UNITY_TRANSFER_FOG` and `UNITY_APPLY_FOG` for abusing to use in fragment shader.
- *
- * @param objectPos the position of the vertex in object space.
- * @param clipPos the position of the vertex in clip space.
- * @param color the base colour, fog not yet applied.
- * @return the new colour, with fog applied.
- */
-float4 ELCalculateFog(float3 objectPos, float4 clipPos, float4 color)
+// Wraps `UNITY_TRANSFER_FOG` and `UNITY_APPLY_FOG` for abusing to use in fragment shader.
+float4 ELCalculateFog(float3 objectPos, float4 clipPos, float4 c)
 {
     struct
     {
@@ -55,38 +42,13 @@ float4 ELCalculateFog(float3 objectPos, float4 clipPos, float4 color)
     o.pos = clipPos;
     UNITY_TRANSFER_FOG(o, o.pos);
 
-    UNITY_APPLY_FOG(o.fogCoord, color);
-    return color;
+    UNITY_APPLY_FOG(o.fogCoord, c);
+    return c;
 }
 
-/**
- * Initialises and returns a surface output structure.
- *
- * @param objectNormal the object normal.
- * @return the surface output structure.
- */
-SurfaceOutputStandard ELInitSurfaceOutput(float3 objectNormal)
-{
-    SurfaceOutputStandard surfaceOutput;
-    UNITY_INITIALIZE_OUTPUT(SurfaceOutputStandard, surfaceOutput);
-    surfaceOutput.Normal = UnityObjectToWorldNormal(objectNormal);
-    surfaceOutput.Occlusion = 1.0;
-    return surfaceOutput;
-}
-
-/**
- * Takes a surface output structure and computes the colour for the fragment in the same
- * way a surface shader would do it.
- *
- * I actually just wanted to write a surface shader, but it turns out you can't write to depth
- * from a surface shader. So here we're using as much as possible of the actual surface
- * shader / standard lighting code.
- *
- * @param surfaceOutput the surface output structure.
- * @param objectPos the position of the vertex in object space.
- * @param objectNormal the normal of the surface at the vertex in object space.
- * @return the colour for the fragment.
- */
+// I wanted to write a surface shader, but it turns out you can't write to depth
+// from a surface shader. So here we're using as much as possible of the actual surface
+// shader / standard lighting code.
 float4 ELSurfaceFragment(SurfaceOutputStandard surfaceOutput, float3 objectPos, float3 objectNormal)
 {
     float3 worldPos = ELObjectToWorldPos(objectPos);
@@ -100,7 +62,7 @@ float4 ELSurfaceFragment(SurfaceOutputStandard surfaceOutput, float3 objectPos, 
 
     UnityGI gi;
     UNITY_INITIALIZE_OUTPUT(UnityGI, gi);
-    gi.indirect.diffuse = 1.0;
+    gi.indirect.diffuse = 0;
     gi.indirect.specular = 1.0;
     gi.light.color = _LightColor0.rgb * attenuation;
     gi.light.dir = worldLightDir;
@@ -143,12 +105,10 @@ float4 ELSurfaceFragment(SurfaceOutputStandard surfaceOutput, float3 objectPos, 
 
 #endif
 
-    float4 color = LightingStandard(surfaceOutput, worldViewDir, gi);
-    color.rgb += surfaceOutput.Emission;
-    color.a = 0.0;
-    color = ELCalculateFog(objectPos, clipPos, color);
-
-    UNITY_OPAQUE_ALPHA(color.a);
-
-    return color;
+    float4 colour = LightingStandard(surfaceOutput, worldViewDir, gi);
+    colour.rgb += surfaceOutput.Emission;
+    colour = ELCalculateFog(objectPos, clipPos, colour);
+    return colour;
 }
+
+#endif
