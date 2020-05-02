@@ -5,92 +5,77 @@
 #include "Common/ELUnityUtilities.cginc"
 #include "Common/ELDistanceFunctions.cginc"
 #include "Common/ELScuttledUnityLighting.cginc"
+#include "Common/ELRaymarchBase.cginc"
 
 #define TORUS_SCALE 0.25
-float vmap(float3 p)
+float Map(float3 pos)
 {
-    p.x = abs(p.x);
+    pos.x = abs(pos.x);
     return opU(
-        sdCapsule(p, float3(0.35, -0.1, 0.0), float3(0.35, 0.1, 0.0), 0.025),
-        sdTorus((p - float3(0.15, 0.0, 0.0)).xzy / TORUS_SCALE, float2(0.4, 0.1)) * TORUS_SCALE);
+        sdCapsule(pos, float3(0.35, -0.1, 0.0), float3(0.35, 0.1, 0.0), 0.025),
+        sdTorus((pos - float3(0.15, 0.0, 0.0)).xzy / TORUS_SCALE, float2(0.4, 0.1)) * TORUS_SCALE);
 }
-struct AppData
+
+float4 Fragment(ELRaymarchBaseVertexOutput input, bool frontFace : SV_IsFrontFace) : SV_Target
 {
-    float4 vertex   : POSITION;
-    float3 normal   : NORMAL;
-    float4 tangent  : TANGENT;
-    float4 color    : COLOR;
-};
-struct Varyings
-{
-    float4 pos              : SV_POSITION;
-    float4 grabPos          : TEXCOORD0;
-    float4 objectPos        : TEXCOORD1;
-    float3 objectNormal     : NORMAL;
-    float3 objectRayStart   : TEXCOORD2;
-    float3 objectRayDir     : TEXCOORD3;
-};
-uniform sampler2D _GrabTex;
-uniform float4 _GrabTex_TexelSize;
-Varyings Vertex(AppData input)
-{
-    Varyings output;
-    UNITY_INITIALIZE_OUTPUT(Varyings, output);
-    output.pos = UnityObjectToClipPos(input.vertex);
-    output.grabPos = ComputeGrabScreenPos(output.pos);
-    output.objectPos = input.vertex;
-    output.objectNormal = input.normal;
-    if (UNITY_MATRIX_P[3][3] == 1.0)
-    {
-        output.objectRayDir = ELWorldToObjectNormal(-UNITY_MATRIX_V[2].xyz);
-        output.objectRayStart = input.vertex - normalize(output.objectRayDir);
-    }
-    else
-    {
-        output.objectRayStart = ELWorldToObjectPos(UNITY_MATRIX_I_V._m03_m13_m23);
-        output.objectRayDir = input.vertex - output.objectRayStart;
-    }
-    return output;
-}
-float4 FragmentForInterior(Varyings input, bool frontFace : SV_IsFrontFace) : SV_Target
-{
-    float3 rd = normalize(input.objectRayDir);
-    float3 ro = input.objectRayStart;
-    float col = 0.0;
-    float3 sp;
-	float t = 0.0;
-    float layers = 0.0;
-    float d;
-    float aD;
+    ELRay ray = ELGetRay(input);
+
+    // Refract the ray if viewing through the front face.
     if (frontFace)
     {
-        rd = refract(rd, input.objectNormal, 1.05);
+        ray.dir = refract(ray.dir, input.objectNormal, 1.05);
     }
-    float thD = 0.005;
-#define MAX_LAYERS 200
-#define ITERATIONS 200
-	for (int i = 0; i < ITERATIONS; i++)
+
+    // Code here inspired by: https://www.shadertoy.com/view/ll2SRy
+
+    // Parameters common to any translucent raymarch
+    #define MAX_LAYERS 200
+    #define ITERATIONS 200
+    #define MAX_T 10.0
+
+    // Parameters specific to our accumulation logic
+    // Surface distance threshold. Smaller values give sharper result.
+    static const float thresholdDist = 0.005;
+    static const float colorDensity = 0.2;
+
+    // Accumulators
+    float color = 0.0;
+    uint layers = 0;
+
+    // Lots of duplicated code here, but the map and accumulation logic is always different.
+    // Is there a good way to clean it up?
+
+	for (uint iteration = 0; iteration < ITERATIONS; iteration++)
     {
-        if (layers > MAX_LAYERS || col.x > 1.0 || t > 10.0)
+        // This one's worth making a branch because an early abort can save GPU time.
+        UNITY_BRANCH
+        if (layers > MAX_LAYERS || color > 1.0 || ray.t > MAX_T)
         {
             break;
         }
-        sp = ro + rd * t;
-        d = vmap(sp);
-        aD = (thD - abs(d) * 15.0 / 16.0) / thD;
-        if (aD > 0.0)
+
+        float mapResult = Map(ray.pos);
+
+        // Are we near the border of the shape?
+        // The 15/16 here is a mystery to me at the moment.
+        float normalisedDist = (thresholdDist - abs(mapResult) * 15.0 / 16.0) / thresholdDist;
+        if (normalisedDist > 0.0)
         {
-            col += aD * aD * (3.0 - 2.0 * aD) / (1.0 + t * t * 0.25) * 0.2;
+            normalisedDist = smoothstep(0.0, 1.0, normalisedDist);
+            // Simulated exponential drop-off
+            float attenuation = 1.0 / (1.0 + ray.t * ray.t * 0.25);
+            color += normalisedDist * attenuation * colorDensity;
             layers++;
         }
-        t += max(abs(d) * 0.7, thD * 1.5);
+
+        // Arbitrary magic numbers again.
+        ELAdvanceRay(ray, max(abs(mapResult) * 0.7, thresholdDist * 1.5));
 	}
-    col = clamp(col, 0.0, 1.0);
-    SurfaceOutputStandard surfaceOutput;
-    UNITY_INITIALIZE_OUTPUT(SurfaceOutputStandard, surfaceOutput);
-    surfaceOutput.Normal = UnityObjectToWorldNormal(input.objectNormal);
-    surfaceOutput.Smoothness = 1.0 - col;
-    surfaceOutput.Occlusion = 1.0;
+
+    color = clamp(color, 0.0, 1.0);
+
+    SurfaceOutputStandard surfaceOutput = ELInitSurfaceOutput(input.objectNormal);
+    surfaceOutput.Smoothness = 1.0 - color;
     surfaceOutput.Alpha = 0.4;
     return ELSurfaceFragment(surfaceOutput, input.objectPos, input.objectNormal);
 }

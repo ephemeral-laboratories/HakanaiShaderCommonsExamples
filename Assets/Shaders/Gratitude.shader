@@ -33,8 +33,8 @@
             }
 
             CGPROGRAM
-            #pragma vertex Vertex
-            #pragma fragment FragmentForInterior
+            #pragma vertex ELRaymarchBaseVertex
+            #pragma fragment Fragment
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
             #pragma target 4.0
@@ -61,8 +61,8 @@
             }
 
             CGPROGRAM
-            #pragma vertex Vertex
-            #pragma fragment FragmentForInterior
+            #pragma vertex ELRaymarchBaseVertex
+            #pragma fragment Fragment
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
             #pragma target 4.0
