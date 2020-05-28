@@ -35,7 +35,7 @@ float2 ELMap(float3 objectPos)
     return opU_mat(exterior, interior);
 }           
 
-void ELDecodeMaterial(ELRaymarchBaseVertexOutput input, float material, inout SurfaceOutputStandard output)
+void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout SurfaceOutputStandard output)
 {
     if (material > 0.5)
     {

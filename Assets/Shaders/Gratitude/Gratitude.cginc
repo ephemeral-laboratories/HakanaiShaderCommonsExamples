@@ -16,7 +16,7 @@ float Map(float3 pos)
         sdTorus((pos - float3(0.15, 0.0, 0.0)).xzy / TORUS_SCALE, float2(0.4, 0.1)) * TORUS_SCALE);
 }
 
-float4 Fragment(ELRaymarchBaseVertexOutput input, bool frontFace : SV_IsFrontFace) : SV_Target
+float4 Fragment(ELRaycastBaseFragmentInput input, bool frontFace : SV_IsFrontFace) : SV_Target
 {
     ELRay ray = ELGetRay(input);
 
