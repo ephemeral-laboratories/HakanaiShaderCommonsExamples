@@ -33,7 +33,7 @@ float2 ELMap(float3 objectPos)
     float2 interior = float2(
         sdCylinder(objectPos.xzy, float2(0.4, 0.08)), 0.0);
 
-    return opU_mat(exterior, interior);
+    return opU(exterior, interior);
 }           
 
 void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout SurfaceOutputStandard output)
