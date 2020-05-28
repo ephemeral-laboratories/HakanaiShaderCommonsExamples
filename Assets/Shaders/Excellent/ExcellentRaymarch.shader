@@ -33,7 +33,7 @@ Shader "Trejkaz/Raymarch/Excellent Icon"
             CGPROGRAM
             #pragma vertex ELRaycastBaseVertex
             #pragma geometry ELGeometryCube
-            #pragma fragment ELRaymarchFragment
+            #pragma fragment ELRaycastFragment
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
             #pragma target 4.0
@@ -55,7 +55,7 @@ Shader "Trejkaz/Raymarch/Excellent Icon"
             CGPROGRAM
             #pragma vertex ELRaycastBaseVertex
             #pragma geometry ELGeometryCube
-            #pragma fragment ELRaymarchFragment
+            #pragma fragment ELRaycastFragment
             #pragma multi_compile_fwdadd_fullshadows
             #pragma multi_compile_fog
             #pragma target 4.0
@@ -76,7 +76,7 @@ Shader "Trejkaz/Raymarch/Excellent Icon"
             CGPROGRAM
             #pragma vertex ELRaycastBaseVertex
             #pragma geometry ELGeometryCube
-            #pragma fragment ELRaymarchFragment
+            #pragma fragment ELRaycastFragment
             #pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
             #pragma multi_compile_shadowcaster
             #pragma target 4.0
@@ -97,7 +97,7 @@ Shader "Trejkaz/Raymarch/Excellent Icon"
             CGPROGRAM
             #pragma vertex ELRaycastBaseVertex
             #pragma geometry ELGeometryCube
-            #pragma fragment ELRaymarchShadowCasterFragment
+            #pragma fragment ELRaycastShadowCasterFragment
             #pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
             #pragma multi_compile_shadowcaster
             #pragma target 4.0
