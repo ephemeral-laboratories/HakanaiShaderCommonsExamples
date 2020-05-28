@@ -33,7 +33,7 @@
             }
 
             CGPROGRAM
-            #pragma vertex ELRaymarchBaseVertex
+            #pragma vertex ELRaycastBaseVertex
             #pragma fragment Fragment
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
@@ -61,7 +61,7 @@
             }
 
             CGPROGRAM
-            #pragma vertex ELRaymarchBaseVertex
+            #pragma vertex ELRaycastBaseVertex
             #pragma fragment Fragment
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
