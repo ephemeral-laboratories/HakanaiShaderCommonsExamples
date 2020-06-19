@@ -1,6 +1,6 @@
 
 #include "../Common/ELRaycastBase.cginc"
-#include "../Common/ELRaycastFunctions.cginc"
+#include "../Common/ELIntersectionFunctions.cginc"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -14,8 +14,8 @@ struct FragmentInput
     float4 grabPos          : TEXCOORD0;
     float4 objectPos        : TEXCOORD1;
     float3 objectNormal     : NORMAL;
-    float3 objectRayStart   : TEXCOORD2;
-    float3 objectRayDir     : TEXCOORD3;
+    float3 objectRayOrigin   : TEXCOORD2;
+    float3 objectRayDirection     : TEXCOORD3;
 
     // Our extra stuff
     float2 texcoord         : TEXCOORD4;
@@ -121,7 +121,7 @@ bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out flo
     static const uint spherePositionOffsets[7] = {0, 0, 1, 3, 6, 10, 15};
 
     uint offset = spherePositionOffsets[face];
-    float tBest = 100.0;
+    float bestReach = 100.0;
     bool hit = false;
     for (uint i = 0; i < face; i++)
     {
@@ -130,13 +130,13 @@ bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out flo
         if (ELSphereRayIntersect(sphereCentre, sphereRadius2, ray))
         {
             hit = true;
-            if (ray.t < tBest)
+            if (ray.reach < bestReach)
             {
-                objectPos = ray.pos;
+                objectPos = ray.position;
                 // XXX: Could try delaying this until the end of the loop?
                 objectNormal = normalize(objectPos - sphereCentre);
                 material = 1.0;
-                tBest = ray.t;
+                bestReach = ray.reach;
             }
         }
     }

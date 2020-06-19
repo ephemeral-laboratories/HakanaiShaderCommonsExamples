@@ -3,3 +3,12 @@
 /Library
 /Logs
 /Temp
+
+# Autocreated by IDEA/Rider
+.idea/
+Assets/Plugins/Editor/JetBrains/
+Assets/Plugins/Editor/JetBrains.meta
+Assets/Plugins/Editor.meta
+
+obj/
+

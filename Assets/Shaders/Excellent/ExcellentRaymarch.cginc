@@ -47,7 +47,7 @@ void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout Su
     }
     else
     {
-        float3 worldRayDir = UnityObjectToWorldNormal(input.objectRayDir);
+        float3 worldRayDir = UnityObjectToWorldNormal(input.objectRayDirection);
         float4 colour = Starnest(worldRayDir);
         output.Emission = colour.rgb;
         output.Alpha = colour.a;

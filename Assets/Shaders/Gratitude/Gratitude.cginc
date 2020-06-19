@@ -23,7 +23,7 @@ float4 Fragment(ELRaycastBaseFragmentInput input, bool frontFace : SV_IsFrontFac
     // Refract the ray if viewing through the front face.
     if (frontFace)
     {
-        ray.dir = refract(ray.dir, input.objectNormal, 1.05);
+        ray.direction = refract(ray.direction, input.objectNormal, 1.05);
     }
 
     // Code here inspired by: https://www.shadertoy.com/view/ll2SRy
@@ -31,7 +31,7 @@ float4 Fragment(ELRaycastBaseFragmentInput input, bool frontFace : SV_IsFrontFac
     // Parameters common to any translucent raymarch
     #define MAX_LAYERS 200
     #define ITERATIONS 200
-    #define MAX_T 10.0
+    #define MAX_REACH 10.0
 
     // Parameters specific to our accumulation logic
     // Surface distance threshold. Smaller values give sharper result.
@@ -49,12 +49,12 @@ float4 Fragment(ELRaycastBaseFragmentInput input, bool frontFace : SV_IsFrontFac
     {
         // This one's worth making a branch because an early abort can save GPU time.
         UNITY_BRANCH
-        if (layers > MAX_LAYERS || color > 1.0 || ray.t > MAX_T)
+        if (layers > MAX_LAYERS || color > 1.0 || ray.reach > MAX_REACH)
         {
             break;
         }
 
-        float mapResult = Map(ray.pos);
+        float mapResult = Map(ray.position);
 
         // Are we near the border of the shape?
         // The 15/16 here is a mystery to me at the moment.
@@ -63,7 +63,7 @@ float4 Fragment(ELRaycastBaseFragmentInput input, bool frontFace : SV_IsFrontFac
         {
             normalisedDist = smoothstep(0.0, 1.0, normalisedDist);
             // Simulated exponential drop-off
-            float attenuation = 1.0 / (1.0 + ray.t * ray.t * 0.25);
+            float attenuation = 1.0 / (1.0 + ray.reach * ray.reach * 0.25);
             color += normalisedDist * attenuation * colorDensity;
             layers++;
         }
