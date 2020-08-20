@@ -21,6 +21,14 @@ float sdStarPrism(float3 objectPos, float scale)
     return sdTriPrism(objectPos, float2(0.1, 0.25)) * scale;
 }
 
+// implementing method declared in `ELRaymarchCommon.cginc`
+void ELBoundingBox(out float3 boxMin, out float3 boxMax)
+{
+    boxMin = float3(-0.5, -0.5, -0.5);
+    boxMax = float3( 0.5,  0.5,  0.5);
+}
+
+// implementing method declared in `ELRaymarchCommon.cginc`
 float2 ELMap(float3 objectPos)
 {
     float rotation = _Time[1] * 25.0;
@@ -36,6 +44,7 @@ float2 ELMap(float3 objectPos)
     return opU(exterior, interior);
 }           
 
+// Implementing function defined in `ELRaycastBase.cginc`
 void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout SurfaceOutputStandard output)
 {
     if (material > 0.5)
