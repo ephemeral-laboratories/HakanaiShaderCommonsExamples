@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 170076734}
-  m_IndirectSpecularColor: {r: 0.4501897, g: 0.49777907, b: 0.56225103, a: 1}
+  m_IndirectSpecularColor: {r: 0.18285106, g: 0.22603533, b: 0.29233944, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -276,7 +276,7 @@ GameObject:
   - component: {fileID: 972379286}
   - component: {fileID: 972379285}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Fluttering Heart
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -312,7 +312,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 3d63088ea92d2ed48b44a2efd4fc03c4, type: 2}
+  - {fileID: 2100000, guid: 8c178d4c3ec43a24ab8037abee5fc993, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

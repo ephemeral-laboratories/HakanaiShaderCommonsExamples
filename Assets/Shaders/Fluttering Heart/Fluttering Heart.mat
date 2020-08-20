@@ -7,8 +7,8 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: HeartField
-  m_Shader: {fileID: 4800000, guid: 01c2d19154fdc5341988dcafedcd55c1, type: 3}
+  m_Name: Fluttering Heart
+  m_Shader: {fileID: 4800000, guid: 65a6cb80375016f438440ada52f2c13a, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
@@ -70,8 +70,9 @@ Material:
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
-    - _SpinSpeed: 4.9
+    - _SpinSpeed: 0
     - _SrcBlend: 1
+    - _ThrobSpeed: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

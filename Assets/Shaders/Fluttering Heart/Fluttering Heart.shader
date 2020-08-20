@@ -8,6 +8,7 @@
         _Glossiness ("Glossiness", Range(0.0, 1.0)) = 0.0
         _Bounds ("Bounds", Range(0.045454545, 0.5)) = 0.045454545
         _SpinSpeed ("Spin Speed", Range(0.0, 50.0)) = 0.0
+        _ThrobSpeed ("Throb Speed", Range(0.0, 50.0)) = 0.0
     }
 
     SubShader

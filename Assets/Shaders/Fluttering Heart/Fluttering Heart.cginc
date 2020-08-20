@@ -10,8 +10,9 @@
 //uniform float _Metallic;
 //uniform float _Glossiness;
 
-uniform float _SpinSpeed;
 uniform float _Bounds;
+uniform float _SpinSpeed;
+uniform float _ThrobSpeed;
 
 // https://www.iquilezles.org/www/articles/functions/functions.htm
 float almostIdentity(float x, float m, float n)
@@ -108,32 +109,63 @@ float sdFlatHeart(float3 objectPos, float radius, float height)
 
     // Extrusion along Z
     float2 w = float2(d, abs(objectPos.z) - height);
-
-    // w *= pow(0.5 + 0.5 * sin(UNITY_TWO_PI * _Time[1] + w.y / 250.0), 4.0);
-
     d = min(max(w.x, w.y), 0.0) + length(max(w, 0.0));
 
     return d;
 }
 
-float infiniteHeartField(float3 objectPos)
+float sdHeartModel(float3 objectPos, float cellSize)
+{
+    float d1 = sdFlatHeart(objectPos, 0.20 * cellSize, 0.02 * cellSize);
+    float d2 = sdFlatHeart(objectPos, 0.18 * cellSize, 0.04 * cellSize);
+    return opU(d1, d2);
+}
+
+// Geometry for one cell in the repetition
+float sdOneCell(float3 objectPos, float cellSize, float3 cellId)
+{
+    static const float throbRatio = .025;
+    static const float randOffsetRatio = 0.15;
+
+    // Pin the central one to the object origin to make the thing easier
+    // to position when switched off.
+    float3 randOffset = float3(0.0, 0.0, 0.0);
+    float randAngle = 0.0;
+    if (any(cellId != 0.0))
+    {
+        float maxOffset = randOffsetRatio * cellSize;
+        randOffset = float3(
+            lerp(-maxOffset, maxOffset, noise(cellId + 0.1)),
+            lerp(-maxOffset, maxOffset, noise(cellId + 0.2)),
+            lerp(-maxOffset, maxOffset, noise(cellId + 0.3)));
+
+        randAngle = noise(cellId) * UNITY_TWO_PI;
+    }
+
+    // Translation has to be before scale and rotation
+    objectPos += randOffset;
+
+    float throbScale = 1.0 + throbRatio * max(sin(_Time[1] * _ThrobSpeed), 0.0);
+    objectPos /= throbScale;
+
+    pRotate(objectPos.xz, randAngle + _Time[1] * _SpinSpeed);
+
+    float d = sdHeartModel(objectPos, cellSize);
+
+    // Compensation for dividing objectPos by the same above
+    d *= throbScale;
+
+    return d;
+}
+
+float sdInfiniteHeartField(float3 objectPos)
 {
     static const float repetition = 11.0;
     static const float cellSize = 1.0 / repetition;
 
     float3 cellId = pMod3(objectPos, float3(cellSize, cellSize, cellSize));
 
-    // Geometry for one cell in the repetition
-    float3 randOffset = float3(
-        lerp(-0.15 * cellSize, 0.15 * cellSize, noise(cellId + 0.1)),
-        lerp(-0.15 * cellSize, 0.15 * cellSize, noise(cellId + 0.2)),
-        lerp(-0.15 * cellSize, 0.15 * cellSize, noise(cellId + 0.3)));
-    float randAngle = noise(cellId) * UNITY_TWO_PI;
-    objectPos += randOffset;
-    pRotate(objectPos.xz, randAngle + _Time[1] * _SpinSpeed);
-    float d1 = sdFlatHeart(objectPos, 0.20 * cellSize, 0.02 * cellSize);
-    float d2 = sdFlatHeart(objectPos, 0.18 * cellSize, 0.04 * cellSize);
-    float d = opU(d1, d2);
+    float d = sdOneCell(objectPos, cellSize, cellId);
 
     // Guard to prevent discontinuities between cells
     // Seen here: http://www.pouet.net/topic.php?which=7920&page=70
@@ -156,7 +188,7 @@ void ELBoundingBox(out float3 boxMin, out float3 boxMax)
 float2 ELMap(float3 objectPos)
 {
     float d = opI(
-        infiniteHeartField(objectPos),
+        sdInfiniteHeartField(objectPos),
         sdSphere(objectPos, _Bounds));
 
     return float2(d, 1.0);
