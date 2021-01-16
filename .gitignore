@@ -4,6 +4,10 @@
 /Logs
 /Temp
 
+# Autocreated by VS
+*.csproj
+*.sln
+
 # Autocreated by IDEA/Rider
 .idea/
 Assets/Plugins/Editor/JetBrains/
