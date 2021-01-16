@@ -27,16 +27,18 @@ float sdDigit(float3 objectPos, float digit)
         }
 
         case 1:
-            d2 = sdLineSegment(objectPos, float2(0.0, -0.6), float2(0.0, 0.6));
+        {
+            d2 = udLineSegment(objectPos, float2(0.0, -0.6), float2(0.0, 0.6));
             break;
+        }
 
         case 2:
         {
             float2 p1 = objectPos.xy - float2(0.0, 0.2);
             d2 = opU(
-                sdArc(p1, 0.4, UNITY_PI),
-                sdBezier(objectPos.xy, float2(0.4, 0.2), float2(0.4, -0.2), float2(-0.4, -0.6)),
-                sdLineSegment(objectPos.xy, float2(-0.4, -0.6), float2(0.4, -0.6))
+                udArc(p1, 0.4, UNITY_PI),
+                udBezier(objectPos.xy, float2(0.4, 0.2), float2(0.4, -0.2), float2(-0.4, -0.6)),
+                udLineSegment(objectPos.xy, float2(-0.4, -0.6), float2(0.4, -0.6))
             );
             break;
         }
@@ -46,9 +48,9 @@ float sdDigit(float3 objectPos, float digit)
             float2 p1 = objectPos.xy - float2(0.0, -0.2);
             pRotateHalf(p1);
             d2 = opU(
-                sdLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.4, 0.6)),
-                sdLineSegment(objectPos.xy, float2(0.4, 0.6), float2(0.0, 0.2)),
-                sdArc(p1, 0.4, UNITY_PI * 1.5)
+                udLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.4, 0.6)),
+                udLineSegment(objectPos.xy, float2(0.4, 0.6), float2(0.0, 0.2)),
+                udArc(p1, 0.4, UNITY_PI * 1.5)
             );
             break;
         }
@@ -56,9 +58,9 @@ float sdDigit(float3 objectPos, float digit)
         case 4:
         {
             d2 = opU(
-                sdLineSegment(objectPos.xy, float2(-0.2, 0.6), float2(-0.4, -0.2)),
-                sdLineSegment(objectPos.xy, float2(-0.4, -0.2), float2(0.4, -0.2)),
-                sdLineSegment(objectPos.xy, float2(0.2, 0.6), float2(0.2, -0.6))
+                udLineSegment(objectPos.xy, float2(-0.2, 0.6), float2(-0.4, -0.2)),
+                udLineSegment(objectPos.xy, float2(-0.4, -0.2), float2(0.4, -0.2)),
+                udLineSegment(objectPos.xy, float2(0.2, 0.6), float2(0.2, -0.6))
             );
             break;
         }
@@ -68,9 +70,9 @@ float sdDigit(float3 objectPos, float digit)
             float2 p2 = objectPos.xy - float2(0.0, -0.2);
             pRotateHalf(p2);
             d2 = opU(
-                sdLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.4, 0.6)),
-                sdLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(-0.2, 0.146410161514)), // (√3-1)/5
-                sdArc(p2, 0.4, UNITY_PI * 1.5 + asin(0.5))
+                udLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.4, 0.6)),
+                udLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(-0.2, 0.146410161514)), // (√3-1)/5
+                udArc(p2, 0.4, UNITY_PI * 1.5 + asin(0.5))
             );
             break;
         }
@@ -80,8 +82,8 @@ float sdDigit(float3 objectPos, float digit)
             float2 p1 = objectPos.xy - float2(0.4, -0.2);
             pRotateQuarter(p1);
             d2 = opU(
-                sdCircle2(objectPos.xy + float2(0.0, 0.2), 0.4),
-                sdBezier(objectPos.xy, float2(-0.4, -0.2), float2(-0.4, 0.6), float2(0.2, 0.6))
+                sdCircle(objectPos.xy + float2(0.0, 0.2), 0.4),
+                udBezier(objectPos.xy, float2(-0.4, -0.2), float2(-0.4, 0.6), float2(0.2, 0.6))
             );
             break;
         }
@@ -89,8 +91,8 @@ float sdDigit(float3 objectPos, float digit)
         case 7:
         {
             d2 = opU(
-                sdLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.4, 0.6)),
-                sdLineSegment(objectPos.xy, float2(0.4, 0.6), float2(-0.2, -0.6))
+                udLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.4, 0.6)),
+                udLineSegment(objectPos.xy, float2(0.4, 0.6), float2(-0.2, -0.6))
             );
             break;
         }
@@ -98,8 +100,8 @@ float sdDigit(float3 objectPos, float digit)
         case 8:
         {
             d2 = opU(
-                sdCircle2(objectPos.xy + float2(0.0, -0.325), 0.275),
-                sdCircle2(objectPos.xy + float2(0.0, 0.275), 0.325)
+                sdCircle(objectPos.xy + float2(0.0, -0.325), 0.275),
+                sdCircle(objectPos.xy + float2(0.0, 0.275), 0.325)
             );
             break;
         }
@@ -109,8 +111,8 @@ float sdDigit(float3 objectPos, float digit)
             float2 p1 = objectPos.xy - float2(-0.4, 0.2);
             pRotateBackQuarter(p1);
             d2 = opU(
-                sdCircle2(objectPos.xy + float2(0.0, -0.2), 0.4),
-                sdBezier(objectPos.xy, float2(0.4, 0.2), float2(0.4, -0.6), float2(-0.2, -0.6))
+                sdCircle(objectPos.xy + float2(0.0, -0.2), 0.4),
+                udBezier(objectPos.xy, float2(0.4, 0.2), float2(0.4, -0.6), float2(-0.2, -0.6))
             );
             break;
         }
@@ -120,8 +122,8 @@ float sdDigit(float3 objectPos, float digit)
             float2 p1 = objectPos.xy + float2(0.0, 0.2);
             pRotateQuarter(p1);
             d2 = opU(
-                sdLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.0, 0.2)),
-                sdArc(p1, 0.4, UNITY_PI * 1.5)
+                udLineSegment(objectPos.xy, float2(-0.4, 0.6), float2(0.0, 0.2)),
+                udArc(p1, 0.4, UNITY_PI * 1.5)
             );
             break;
         }
@@ -133,14 +135,18 @@ float sdDigit(float3 objectPos, float digit)
             float2 p2 = objectPos.xy + float2(0.0, 0.275);
             pRotateQuarter(p2);
             d2 = opU(
-                sdArc(p1, 0.275, UNITY_PI),
-                sdArc(p2, 0.325, UNITY_PI * 1.5)
+                udArc(p1, 0.275, UNITY_PI),
+                udArc(p2, 0.325, UNITY_PI * 1.5)
             );
             break;
         }
 
         default:
-            return sdSphere(objectPos, 0.5);
+        {
+            // Placeholder
+            d2 = udPoint(objectPos - 0.5);
+            break;
+        }
     }
 
     return length(float2(d2, objectPos.z)) - wireRadius;
