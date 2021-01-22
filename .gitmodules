@@ -1,0 +1,3 @@
+[submodule "Assets/Shaders/Common"]
+	path = Assets/Shaders/Common
+	url = git@github.com:ephemeral-laboratories/HakanaiShaderCommons.git
