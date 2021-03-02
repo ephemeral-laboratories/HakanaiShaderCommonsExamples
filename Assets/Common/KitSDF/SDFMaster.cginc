@@ -1,10 +1,18 @@
 // Please do not push this file to master as part of any changes. 
+// Upgrade NOTE: excluded shader from OpenGL ES 2.0 because it uses non-square matrices
+#pragma exclude_renderers gles
 // This file a library for my personal projects.
 #ifndef SDF_MASTER_
 #define SDF_MASTER_
 #define PI 3.14159265 //TODO: Change to UNITY_PI
-#define TAU (2*PI)
+#define HF_PI PI / 2. //TODO: Change to UNITY_PI
+#define HF_PI2 HF_PI / 2. //TODO: Change to UNITY_PI
+#define TAU 6.28318530718
 #define PHI (sqrt(5)*0.5 + 0.5)
+#define sqrt_2 1.41421356237
+#define sqrt_half = 0.70710678118
+
+
 
 #define iTime _Time.y
 #define iResolution _ScreenParams
@@ -19,12 +27,544 @@
 #define textureLod(a, b, c) tex2Dlod(a, float4(b, 0, c))
 #define atan(x, y) atan2(y, x)
 #define mod(x, y) (x - y * floor(x / y)) // glsl mod
+#define uvec2 uint2
+#define uvec3 uint3
+#define uvec4 uint4
 
 #include "UnityCG.cginc"
 
 
+////////////////////////////////////////////////////////////////
+//
+//             Unorganized functions
+//
+////////////////////////////////////////////////////////////////
+
+float smootherstep(float edge0, float edge1, float x) {
+  // Scale, and clamp x to 0..1 range
+  x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
+  // Evaluate polynomial
+  return x * x * x * (x * (x * 6. - 15.) + 10.);
+}
+
+float softsquare(float x) {
+    float x2 = abs(2. * fract(x) - 1.);
+    return smoothstep(0.1, 0.9, x2);
+}
+
+// xor-ish behavior for floats
+float flXor(float x, float y) {
+    return x + y - 2. * (x * y);
+}
+
+// folds 0>1>2>3>4... to 0>1<0>1<0...
+float fold(float x) {
+    return abs(1. - mod(x, 2.));
+}
+
+vec3 gradient(float x, float y) {
+    const float _2PI3 = 2.094395102393193;
+    float g1 = softsquare(x);
+    float g2 = softsquare(x - 0.3);
+    vec3 blend = (vec3(sin(y), sin(y + _2PI3), sin(y - _2PI3)) + 1.) * 0.5;
+    return blend * g2 + (1. - blend) * g1;
+}
+
+float spikes(float x) {
+    x = 1. - abs(sin(x));
+    return x * x;
+}
+vec3 whiteOutBlend(vec3 n1, vec3 n2) {
+	return normalize(vec3(n1.xy + n2.xy, n1.z*n2.z));   
+}
+float tick(float t){
+    const float ticksPerRot = 24.0;
+    const float tickLength = 0.125;
+    const float tickPeriod = 1.;
+    t += 0.5 * tickLength + 0.5 * tickPeriod;
+    return (
+        floor(t / tickPeriod) + smoothstep(0., 1., (mod(t / tickPeriod, 1.) - 0.5) / tickLength)
+ 		) / ticksPerRot
+    ;
+}
+float fspiral01(float x) {
+  return max(0.0, sin(x) * 0.75 + 0.25);
+}
+float fspiral02(float x)
+{
+    float n = frac(x / 3.14159265);
+    return clamp((n - 0.5) * 2.5, 0., 1.);
+}
+
+float remap(float x, float lowIn, float rangeIn, bool inver)
+{
+    float o = clamp(clamp(x - lowIn, 0., rangeIn) / rangeIn, 0., 1.);
+    if (inver) {
+        return 1. - o;
+    }
+    return o;
+}
+float fspiral03nyan(float theta)
+{
+	const float HEART_FACTOR = 0.85; //TODO: parameterize
+    float a_theta = abs(theta);
+    float hp_shift_theta = HF_PI2 - abs(a_theta);
+    float p_shift_theta = PI - abs(a_theta);
+
+    float heart = 2.0 - (1.0 + HF_PI2 * HEART_FACTOR) * max(cos(sin(hp_shift_theta)), 0.0);
+    return heart;
+}
+
+float fspiral04(float x)
+{
+    return max(0.0, (sin(x) + 0.3) * 0.8);
+}
+vec3 fblend(vec3 x1, vec3 x2, float factor)
+{
+    return x2 * factor + x1 * (1. - factor);
+}
+
+float fzigzag(float x)
+{
+    return abs(1. - mod(x, 2.0));
+}
+  
+float feyeAccent(float x) {
+  if (x > 1.0) {
+    return 0.;
+  }
+  return 1.0 - x * x;
+}
+  
+float ftimeBounce(float x)
+{
+    return -3. * sin(PI * x) + x;
+}
+float fspiral05(float x, float y)
+{
+    float n = -0.5 * abs(x) + y;
+    return log(x * x + 1.5 * n * n);
+}
+
+float fspiral06(float x, float multi, float offset)
+{
+    return max(0.0, min(1.0, (sin(x * 3.14159265) + offset) * multi));
+}
+
+vec4 fgetCornerColors(vec2 coord)
+{
+    vec2 halfRes = iResolution.xy * 0.5;
+    float totalArea = iResolution.x * iResolution.y;
+    
+    vec3 cornerColors[4];
+	
+    cornerColors[0] = vec3(1.0, 0.0, 0.0);
+    cornerColors[1] = vec3(0.0, 0.0, 1.0);
+    cornerColors[2] = vec3(0.0, 1.0, 0.0);
+    cornerColors[3] = vec3(1.0, 1.0, 0.0);
+        
+    vec2 cornerCoords[4];
+    
+    cornerCoords[0] = (float2)(-1.) * halfRes;
+    cornerCoords[1] = vec2(1., -1.) * halfRes;
+    cornerCoords[2] = (float2)(1.) * halfRes;
+    cornerCoords[3] = vec2(-1., 1.) * halfRes;
+    
+	vec3 result = (float3)(0.0);
+        
+	for(int i = 0; i < 4; i++)
+	{
+		vec2 cCoord = cornerCoords[i] * iResolution.xy;
+
+		vec2 d = cornerCoords[i] - coord;
+        
+        float a = abs(d.x * d.y);
+
+		float w = a / totalArea;
+
+		result += w * cornerColors[i];
+    }
+    
+	return vec4(result, 1.0);
+}
+
+vec4 fspiral07(vec2 coord, 
+				float alpha, // default: 0.
+				float beta	 // default: 10.
+			  )
+{	
+	float alpha_t = alpha - iTime * 50.0;
+
+	float x = coord.x;
+	float y = coord.y;
+
+	float r = sqrt(dot(coord, coord));
+
+	float phi = atan(y, x);
+
+	float phi_r = (r - alpha_t) / beta;
+
+	float r_phi = alpha_t + (beta * phi);
+
+	float remainder = abs(cos(phi) - cos(phi_r));
+
+	if (remainder < 0.5)
+	{
+		return vec4((float3)(0), 1.0);
+	}
+	else
+	{
+		return vec4((float3)(remainder), 1.0);
+	}
+}
+
+vec4 fspiral08(vec2 coord 
+				,float alpha // default: 0.
+				,float beta	 // default: 10.
+				,float num_branches //default: 4.
+			  )
+{	
+	float alpha_t = alpha - iTime * 50.;
+
+	float x = coord.x;
+	float y = coord.y;
+
+	float r = sqrt(x * x + y * y);
+
+	float phi = atan(y, x) * num_branches;
+
+	float phi_r = (r - alpha_t) / beta;
+
+	float r_phi = alpha_t + (beta * phi);
+
+	float remainder = abs(sin(phi) - sin(phi_r));
+
+	remainder += abs(cos(phi) - cos(phi_r));
+
+	if (remainder < 1.0)
+	{
+		vec4 c1 = vec4(1, 0, 0, 1);
+		vec4 c2 = vec4(0, 0, 1, 1);
+
+		float t = (phi / (2. * PI)) + 0.5;
+
+		return mix(c1, c2, remainder);
+	}
+	else
+	{
+        vec4 c1 = vec4(1, 0, 0, 1);
+		vec4 c2 = vec4(0, 0, 1, 1);
+        return mix(c1, c2, remainder);
+	}
+}
+
+vec4 fspiral09(vec2 coord 
+				,float alpha // default: 0.
+				,float beta	 // default: 10.
+				,float num_branches //default: 4.
+			  )
+{
+	float alpha_t = alpha - iTime * 50.;
+
+	float x = coord.x;
+	float y = coord.y;
+
+	float r = sqrt(x * x + y * y);
+
+	float phi = atan(y, x) * -num_branches;
+
+	float phi_r = (r - alpha_t) / beta;
+
+	float r_phi = alpha_t + (beta * phi);
+
+	float remainder = abs(sin(phi) - sin(phi_r));
+
+	remainder += abs(cos(phi) - cos(phi_r));
+
+	if (remainder < 1.0)
+	{
+		vec4 c1 = vec4(1, 0, 0, 1);
+		vec4 c2 = vec4(0, 0, 1, 1);
+
+		float t = (phi / (2. * PI)) + 0.5;
+
+		return mix(c1, c2, remainder);
+	}
+	else
+	{
+        vec4 c1 = vec4(1, 0, 0, 1);
+		vec4 c2 = vec4(0, 0, 1, 1);
+        return mix(c1, c2, remainder);
+	}
+}
+
+vec2 ftwist01(vec2 coord 
+				,float twist_period // default: 5.
+			  )
+{
+	vec2 diff = coord;
+
+	float l = length(diff);
+
+	float twistRadius = length(iResolution.xy * 0.5);
+    
+	if (l < twistRadius)
+	{
+		float adjustedCurrTime = iTime;
+
+		float k = floor(adjustedCurrTime / twist_period);
+        
+        float dt = mod(iTime, twist_period) / twist_period;
+
+		float rad = PI * 0.1;
+        
+        //rad = rad * (sin(l / 20. + iTime));
+        
+        rad *= sin(l / 20.) + (l / length(iResolution.xy) * 0.5);// * sin(iTime);
+        
+        
+		vec2 unitDiff = normalize(diff);
+
+		float diffRad = atan(unitDiff.y, unitDiff.x);
+
+		float newRad = diffRad + rad;
+        
+		vec2 newDiff = vec2(cos(newRad), sin(newRad)) * l;
+
+		vec2 newCoord = newDiff;
+
+		return newCoord;
+	}
+	else
+	{
+		return coord;
+	}
+}
+
+vec2 fpulse01(vec2 coord 
+				,float pulse_period // default: 2.5
+				,float amplitude	 // default: 10.
+			  )
+{
+	// this indicates how many periods have passed
+	float k = floor(iTime / pulse_period);
+
+	// currTime - (k * period) basically gives us the remainder of the above division, so if we divide
+	// that by the period we have a representation of time passed relative to the period,  parameterized
+	// to be between 0 and 1
+	float dt = (iTime - (k * pulse_period)) / pulse_period;
+
+	dt = iTime / pulse_period;
+	
+	vec2 diff = coord;
+
+	// Length of diff comes in handy for a few things
+	float l = length(diff);
+
+	// Same trick as the above. Use amplitude as indicator of how many periods away we are and flip the offset direction based on evenness
+	int i = int(floor(l / amplitude));
+
+	//bool isEven = mod(i, 2) == 0.;
+    bool isEven = true;
+
+	//float sign = isEven ? 1.0 : -1.0;
+
+	float sign = sin(l / 20.);
+	
+	float offset =  amplitude * sin(dt * PI * 2.0);
+
+	float newL = l + (sign * offset);
+	//float newL = l + offset;
+
+	vec2 normDiff = normalize(diff);
+	vec2 newDiff = normDiff * newL;
+
+	return newDiff;
+}
+
+float ftime01(float x) {
+    return cos(smoothstep(0.92, 1.0, fract(x)) * 3.14159265);
+}
+
+float ftime02(float x) {
+    return smootherstep(0.92, 0.93, fract(x));
+        //* (1.0 - smootherstep(0.99, 1.0, fract(x)))
+}
+float fpixel(float x, float y, float thres)
+{
+    float r_sq = x +  y /2.;
+    return 1.0 - (r_sq - thres) * 1.0;
+}
 
 
+float fspiralpiece (vec2 uv, float rotate) { 
+    
+    // take polar coords 
+	float a = length(uv - vec2(0.0,0.0));
+    vec2 polar = vec2(a,atan(uv.y, uv.x) + rotate*UNITY_PI);
+    
+    // log spiral is e^(2*pi*theta), thanks wikipedia
+    // this makes a spiral boundrary, abs and subtract from 1 for spiral line pieces
+    // with MAGIC constants for nicer 'colors'. ok nicer greyscale, whatever. 
+    return 1.0 - clamp(abs(mod(polar.y, UNITY_PI*2.0) - (3.0 * log(polar.x))), 0.0, 1.1);
+}
+
+// stack spiralpieces line segments 4 times over.
+// TODO: spirals not perfect, can see boundraries between pieces
+// MAGIC: why 8.1? because it looks better than 8.0 >_< 
+// probably 'should be' some multiple of pi or something else stupid like that
+vec4 fspiral10 (vec2 uv, float rotate, vec3 color) {
+	return clamp((vec4)(fspiralpiece(uv*1.000, rotate) 
+                    + fspiralpiece(uv*8.12, rotate) 
+                    + fspiralpiece(uv*66.0, rotate)
+                    + fspiralpiece(uv*536.0, rotate)), 0.0, 1.0) 
+					* vec4(color, 0.0);
+}
+
+// rings... distance to center, take mod to repeat, subtract and abs to make symmetrical. 
+// then pow for less blur / thinner pieces, and weirder silvery overlaps. 
+float ffring02 (vec2 p, float offset) {
+    // MAGIC WITH EXTRA MAGIC ON TOP HOLY SHIT
+    // color   v1    |    ringsize (*will* break it)    v2, 1/2*v1 v3 | color v4
+    return pow(2.42*abs(mod(offset-length((vec2)(0.0)-p), 0.75) -0.375) + 0.1, 5.2);
+}
+
+
+float fsdp(vec2 p, float r, float d){
+    p = abs(p);
+    float b = sqrt(r*r-d*d);
+    return ((p.y-b)*d>p.x*b)?length(p-(vec2)(0.0,b)) : length(p-(vec2)(-d,0.0))-r;
+}
+
+float fspiral11(vec2 m) {
+	float r = length(m), a = atan(m.y, m.x);
+	return sin(75.*(sqrt(r) - .04 * a - .05 * iTime * 2.));
+}
+
+float fspiral12heart(float theta)
+{
+	const float HEART_FACTOR = 0.85; //TODO: parameterize
+    float a_theta = abs(theta);
+    float hp_shift_theta = HF_PI2 - abs(a_theta);
+    float p_shift_theta = PI - abs(a_theta);
+    float heart = 2.0 
+        - (1.0 + HF_PI2 * HEART_FACTOR) * max(cos(sin(hp_shift_theta)), 0.0);
+    return heart;
+}
+
+
+vec2 cart_logpolar(vec2 p) {
+	return vec2(atan((p).y, (p).x), log(length(p)));
+}
+vec3 fHSVToRGB01(vec3 hsv) {
+	return (mix(vec3(1.0, 1.0, 1.0), clamp((abs((mod((((hsv).x) / 60.0) + (vec3(0.0, 4.0, 2.0)), 6.0)) - 3.0)) - 1.0, 0.0, 1.0), (hsv).y)) * ((hsv).z);
+}
+vec2 polar_norm(vec2 p) {
+	return vec2(mod(((p).x) + 6.28318, 6.28318), (p).y);
+}
+vec2 logpolar_cart(vec2 p) {
+	return (vec2(cos((p).x), sin((p).x))) * (pow(2.71828, (p).y));
+}
+vec4 distance_field(vec2 p) {
+	float a = ((p).y) * ((sin(((iTime) / 10.0) + (((p).y) + (iTime)))) * 2.0);
+	vec2 xp = logpolar_cart(((p) + (vec2(a, 0.0))) - ((mod(polar_norm(((p) - (iTime)) + (vec2(a, 0.0))), 0.314159)) - 0.1570795));
+	vec2 t = (abs((mod(polar_norm(((p) - (iTime)) + (vec2(a, 0.0))), 0.314159)) - 0.1570795)) - 0.1570795;
+	return vec4(mix((min(max((t).x, (t).y), 0.0)) + (length(max(t, 0.0))), (length((mod(polar_norm(((p) - (iTime)) + (vec2(a, 0.0))), 0.314159)) - 0.1570795)) - 0.1570795, abs(sin(((xp).y) * 10.0))), fHSVToRGB01(vec3(abs((sin((((xp).y) + ((xp).x)) * 10.0)) * 360.0), abs(sin(((xp).x) * 17.0)), abs(sin(((xp).y) * 13.0)))));
+}
+
+// A single iteration of Bob Jenkins' One-At-A-Time hashing algorithm.
+uint fHash01(uint x) {
+    x += ( x << 10u );
+    x ^= ( x >>  6u );
+    x += ( x <<  3u );
+    x ^= ( x >> 11u );
+    x += ( x << 15u );
+    return x;
+}
+
+// Generate random 4bit RGB color
+vec3 rcol01(uint seed) {
+    uint x = fHash01(seed);
+    return vec3(x & 15u, x>>4u & 15u, x>>8u & 15u) / 15.;
+}
+
+vec3 fcol01(float x) {
+    uint seed = uint(int(x));
+    return  rcol01(seed)      * smoothstep(0.34, 0.02, frac(x))
+          + rcol01(seed + 1u) * smoothstep(0.00, 0.32, frac(x));
+}
+
+// gives pure saturated color from input [0, 6) for phase
+vec3 fhue01(float x) {
+    x = mod(x, 6.);
+    return clamp(vec3(
+        abs(x - 3.) - 1.,
+        -abs(x - 2.) + 2.,
+        -abs(x - 4.) + 2.
+    ), 0., 1.);
+}
+
+// does pseudo overexposure filter
+vec3 deepfry(vec3 rgb, float x) {
+    rgb *= x;
+    return rgb + vec3(
+      max(0., rgb.g - 1.) + max(0., rgb.b - 1.),
+      max(0., rgb.b - 1.) + max(0., rgb.r - 1.),
+      max(0., rgb.r - 1.) + max(0., rgb.g - 1.)
+    );
+}
+// switches between 2 modes by comparing between the first 2 args
+float swch(float val, float thres, float a, float b) {
+    return step(val, thres) * a + step(thres, val) * b;
+}
+float rcol02(uint seed) {
+    return asfloat(asuint(0x007FFFFFu & fHash01(seed) | 0x3F800000u)) - 1.;
+}
+
+float logStripe(vec2 uv, float offset, float angleAdd) {
+    return frac(offset + 2. * log(abs(dot(
+        uv, vec2(cos(angleAdd), sin(angleAdd))
+    ))+0.03));
+}
+vec3 spectrum(float x) {
+    x = mod(x, 3.);
+    return mix(
+       mix(vec3(1, 1, 0), vec3(0, 1, 1), x),
+       mix(vec3(1, 0, 1), vec3(1, 1, 0), x-2.),
+       x-1.
+    );
+}
+float isOdd(int x) {
+    return float(x & 1) * 2. - 1.;
+}
+
+// should generate 4 1-bit RGB colors, where
+// colors 0 and 2, and colors 1 and 3, can't be the same
+float4x3 randCol(uint x) {
+    uvec3 col0 = uvec3(
+         x        & 1u,
+        (x >> 1u) & 1u,
+        (x >> 2u) & 1u
+    );
+    uvec3 col1 = uvec3(
+        (x >> 3u) & 1u,
+        (x >> 4u) & 1u,
+        (x >> 5u) & 1u
+    );
+    uint y = x ^ ((x >> 6u) % 6u + 1u);
+    uvec3 col2 = uvec3(
+         y        & 1u,
+        (y >> 1u) & 1u,
+        (y >> 2u) & 1u
+    );
+    y = (x >> 3u) ^ ((x >> 9u) % 6u + 1u);
+    uvec3 col3 = uvec3(
+         y        & 1u,
+        (y >> 1u) & 1u,
+        (y >> 2u) & 1u
+    );
+    return float4x3(col0, col1, col2, col3);
+}
 
 ////////////////////////////////////////////////////////////////
 //
@@ -829,6 +1369,13 @@ float ELSmootherStep(float edge0, float edge1, float x)
     return x * x * x * (x * (x * 6.0 - 15.0) + 10.0);
 }
 
+float3 ELHueShift (in float3 color, in float3 shift) {
+    float3 p = float3(0.55735,0.55735,0.55735) * (float3(0.55735,0.55735,0.55735),color);
+    float3 u = color - p;
+    float3 v = cross(float3(0.55735,0.55735,0.55735),u);
+    color = u*cos(shift*0.2832) + v*sin(shift*0.2832) + p;
+	return color;
+}
 /*
 	Return a 'stable' camera position.
 	In VR this is between your two eyes. In desktop it's your camera.

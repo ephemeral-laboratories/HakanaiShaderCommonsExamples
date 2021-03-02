@@ -196,7 +196,8 @@ void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout Su
 bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out float material, out uint its, out float reach)
 {   
     its = 0;
-    reach = 0.0;        
+    reach = 0.0;
+    
     if (hitsFrame)
     {
         // Hits the frame immediately
