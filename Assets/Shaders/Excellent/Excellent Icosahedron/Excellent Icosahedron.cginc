@@ -164,24 +164,22 @@ void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout Su
 {
     float3 worldRayDir = UnityObjectToWorldNormal(input.objectRayDirection);
 	float rt = pow(sin( 3 * UNITY_PI * frac(_Time.x)), 2.0);
-    float s = sdRoundBox(repeat(input.objectPos, ELSmootherStep(2.0,0.1,rt)), rt,0.45);
-    float c = sdBox(repeat(input.objectPos, ELSmootherStep(6.0,0.25,rt)), rt);
+    float s = sdRoundBox(repeat(input.objectPos, 0.5), ELSmootherStep(1.10,1.05,rt),0.5);
+    float c = sdBox(repeat(input.objectPos, 0.25), 0.1 / length(input.objectPos * 2.0));
     float t = sdRoundBox(
 		repeat(input.objectPos, 0.25),
-		0.1 - 0.1 * rt,
-		0.1 / length(input.objectPos * 2.0));
+		0.058 - 0.058 * rt,
+		0.2 / length(input.objectPos * 4.0));
     float p = sdSphere(repeat(worldRayDir, 0.2), 3.5);
-    float4 a = normalize(float4(1.0 / ELSmootherStep(s,t,rt), 1.0 / t, 1.0 / c,  1.0));
-    float4 mat1Color = float4(
-        a.x ,
-        a.y ,
-        a.z,
-        a.w) ;
+    float dd = ELSmootherStep(s,t,rt);
+    float ddr = lerp(c,t,rt);
+    float4 a = (float4(1.0 / s, 1.0 / t, 1.0 / ddr,  1.0 ));
     float4 colour = Starnest(worldRayDir);
+    float4 mat1Color = a * colour ;
 
-    output.Albedo = lerp(0.0,mat1Color.rgb, material);
+    output.Albedo = lerp(0.0, mat1Color.rgb + _Colour1.rgb, material);
     output.Metallic = lerp(0.0,_Metallic1, material);
-    output.Smoothness = lerp(0.0, _Glossiness1, material);
+    output.Smoothness = ELSmootherStep(0.0,_Glossiness1, material);
     output.Alpha = lerp(colour.a, _Colour1.a, material);
     output.Emission = lerp(colour.rgb, 0.0, material);
 

@@ -63,11 +63,11 @@ Material:
     - _DstBlend: 0
     - _GlossMapScale: 1
     - _Glossiness: 0.619
-    - _Glossiness1: 0.6
+    - _Glossiness1: 0.51
     - _Glossiness2: 0
     - _GlossyReflections: 1
     - _Metallic: 1
-    - _Metallic1: 0.5
+    - _Metallic1: 0.84
     - _Metallic2: 0
     - _Mode: 0
     - _OcclusionStrength: 1

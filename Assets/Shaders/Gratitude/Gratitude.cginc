@@ -4,7 +4,8 @@
 #include "../Common/ELMathUtilities.cginc"
 #include "../Common/ELUnityUtilities.cginc"
 #include "../Common/ELDistanceFunctions.cginc"
-#include "../Common/ELScuttledUnityLighting.cginc"
+//Already referenced in below include 
+//#include "../Common/ELScuttledUnityLighting.cginc"
 #include "../Common/ELRaymarchBase.cginc"
 
 #define TORUS_SCALE 0.25
@@ -77,7 +78,8 @@ float4 Fragment(ELRaycastBaseFragmentInput input, bool frontFace : SV_IsFrontFac
     SurfaceOutputStandard surfaceOutput = ELInitSurfaceOutput(input.objectNormal);
     surfaceOutput.Smoothness = 1.0 - color;
     surfaceOutput.Alpha = 0.4;
-    return ELSurfaceFragment(surfaceOutput, input.objectPos, input.objectNormal);
+    //Added the input struct because it thinks adding in another float3 parameter for sh is invalid.
+    return ELSurfaceFragment(surfaceOutput, input, input.objectPos, input.objectNormal);
 }
 
 #endif

@@ -17,12 +17,14 @@ struct FragmentInput
     float3 objectNormal     : NORMAL;
     float3 objectRayOrigin   : TEXCOORD2;
     float3 objectRayDirection     : TEXCOORD3;
-
+    float4 lmap : TEXCOORD4;
+    half3 sh : TEXCOORD5;
+    uint its : TEXCOORD6;
     // Our extra stuff
-    float2 texcoord         : TEXCOORD4;
-    float2 texcoordMetallic : TEXCOORD5;
-    float2 texcoordNormal   : TEXCOORD6;
-    float2 texcoordEmission : TEXCOORD7;
+    float2 texcoord         : TEXCOORD7;
+    float2 texcoordMetallic : TEXCOORD8;
+    float2 texcoordNormal   : TEXCOORD9;
+    float2 texcoordEmission : TEXCOORD10;
 };
 
 
@@ -189,10 +191,11 @@ void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout Su
         output.Emission = tex2D(_EmissionMap, myInput.texcoordEmission) * _EmissionColor;
     }
 }
-
+ 
 // Implementing function defined in `ELRaycastBase.cginc`
-bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out float material)
-{
+bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out float material, out uint its)
+{   
+    its = 0;
     if (hitsFrame)
     {
         // Hits the frame immediately
@@ -204,7 +207,7 @@ bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out flo
 
     // Body of default `ELRaycast` follows.
 
-    bool hit = ELRaymarch(ray, objectPos, material);
+    bool hit = ELRaymarch(ray, objectPos, material, its);
 
     // Avoid potential multiple map calls if it didn't hit at all
     UNITY_BRANCH
