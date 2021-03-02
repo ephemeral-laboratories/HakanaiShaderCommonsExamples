@@ -193,9 +193,10 @@ void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout Su
 }
  
 // Implementing function defined in `ELRaycastBase.cginc`
-bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out float material, out uint its)
+bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out float material, out uint its, out float reach)
 {   
     its = 0;
+    reach = 0.0;        
     if (hitsFrame)
     {
         // Hits the frame immediately
@@ -207,7 +208,7 @@ bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out flo
 
     // Body of default `ELRaycast` follows.
 
-    bool hit = ELRaymarch(ray, objectPos, material, its);
+    bool hit = ELRaymarch(ray, objectPos, material, its, reach);
 
     // Avoid potential multiple map calls if it didn't hit at all
     UNITY_BRANCH

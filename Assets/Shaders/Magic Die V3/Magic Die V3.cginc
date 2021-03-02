@@ -91,15 +91,16 @@ void StashGlobals(FragmentInput input)
 }
 
 // Implementing function defined in `ELRaycastBase.cginc`
-bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out float material, out uint iterations)
+bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out float material, out uint iterations, out float reach)
 {
+    iterations = 0;
+    reach = 0.0;    
     if (face == 7)
     {
         // Hits the frame immediately
         objectPos = myInput.objectPos;
         objectNormal = myInput.objectNormal;
         material = 0.0;
-        iterations = 0;
         return true;
     }
 
