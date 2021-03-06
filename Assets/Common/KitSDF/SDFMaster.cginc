@@ -40,6 +40,17 @@
 //
 ////////////////////////////////////////////////////////////////
 
+
+float3 BlendLight (float3 base, float3 blend) // soft light
+{
+    return (blend < 0.5) ? (2.0 * base * blend + base * base * (1.0 - 2.0 * blend)) : (sqrt(base) * (2.0 * blend - 1.0) + 2.0 * base * (1.0 - blend));
+}
+
+float3 BlendOverlay (float3 base, float3 blend) // overlay
+{
+    return base < 0.5 ? (2.0 * base * blend) : (1.0 - 2.0 * (1.0 - base) * (1.0 - blend));
+}
+
 float smootherstep(float edge0, float edge1, float x) {
   // Scale, and clamp x to 0..1 range
   x = clamp((x - edge0) / (edge1 - edge0), 0.0, 1.0);
@@ -2655,6 +2666,33 @@ float sdStarPrism(float3 objectPos, float scale)
 
     objectPos /= scale;
     return sdTriPrism(objectPos, float2(0.1, 0.25)) * scale;
+}
+
+float sdKnighty(float3 p, float i0)
+{
+    const float minsx[5] = {-.3252, -1.05,-1.21,-1.04,-0.737};
+    const float minsy[5] = {-.7862, -1.05,-.954,-.79,-0.73};
+    const float minsz[5] = {-.0948, -0.0001,-.0001,-.126,-1.23};
+    const float minsw[5] = {.678, .7,1.684,.833, .627};
+    const float maxsx[5] = {.3457, 1.05,.39,.3457,.73};
+    const float maxsy[5] = {1.0218, 1.05,.65,1.0218,0.73};
+    const float maxsz[5] = {1.2215, 1.27,1.27,1.2215,.73};
+    const float maxsw[5] = {.9834, .95,2.74,.9834, .8335};
+
+    float4 mins = float4(minsx[i0], minsy[i0], minsz[i0], minsw[i0]);
+    float4 maxs = float4(maxsx[i0], maxsy[i0], maxsz[i0], maxsw[i0]);
+
+    float k = 0.0;
+    float scale=1.0;
+    for (int i=0; i < 5; i++)
+    {
+        p = 2.0 * clamp(p, mins.xyz, maxs.xyz) - p;
+        k = max(mins.w / dot(p,p), 1.0);
+        p *= k;
+        scale *= k;
+    }
+    float rxy = length(p.xy);
+    return 0.7 * max(rxy - maxs.w, rxy * p.z / length(p)) / scale;
 }
 /*
 ###################  End Region SDFs ###################
