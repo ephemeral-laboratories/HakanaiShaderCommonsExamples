@@ -46,6 +46,7 @@
             CGPROGRAM
             #pragma vertex ELRaycastBaseVertex
             #pragma fragment ELRaycastFragment
+            #pragma multi_compile _ VERTEXLIGHT_ON
             #pragma multi_compile_fwdbase
             #pragma multi_compile_fog
             #pragma target 4.0
