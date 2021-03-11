@@ -101,7 +101,6 @@ bool ELRaycast(ELRay ray, out float3 objectPos, out float3 objectNormal, out flo
         objectPos = myInput.objectPos;
         objectNormal = myInput.objectNormal;
         material = 0.0;
-        iterations = 0;
         return true;
     }
 
