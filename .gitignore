@@ -3,6 +3,8 @@
 /Library
 /Logs
 /Temp
+Assets/Resources/BillingMode.json
+Assets/Resources/BillingMode.json.meta
 
 # Autocreated by VS
 *.csproj
@@ -15,4 +17,3 @@ Assets/Plugins/Editor/JetBrains.meta
 Assets/Plugins/Editor.meta
 
 obj/
-
