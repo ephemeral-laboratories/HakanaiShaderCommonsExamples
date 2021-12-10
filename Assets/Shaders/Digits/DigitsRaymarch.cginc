@@ -92,7 +92,7 @@ float sdDigit9(float3 objectPos)
         udBezier(objectPos.xy, float2(0.4, 0.2), float2(0.4, -0.6), float2(-0.2, -0.6)));
 }
 
-float sdDigit10(float3 objectPos)
+float sdDigitX(float3 objectPos)
 {
     float2 p1 = objectPos.xy + float2(0.0, 0.2);
     pRotateQuarter(p1);
@@ -101,7 +101,7 @@ float sdDigit10(float3 objectPos)
         udArc(p1, 0.4, UNITY_PI * 1.5));
 }
 
-float sdDigit11(float3 objectPos)
+float sdDigitE(float3 objectPos)
 {
     float2 p1 = objectPos.xy + float2(0.0, -0.325);
     pRotateQuarter(p1);
@@ -124,18 +124,18 @@ float sdDigit(float3 objectPos, float digit)
     // TODO: Digit morphing
     switch ((uint) floor(digit))
     {
-        case 0: d2 = sdDigit0(objectPos); break;
-        case 1: d2 = sdDigit1(objectPos); break;
-        case 2: d2 = sdDigit2(objectPos); break;
-        case 3: d2 = sdDigit3(objectPos); break;
-        case 4: d2 = sdDigit4(objectPos); break;
-        case 5: d2 = sdDigit5(objectPos); break;
-        case 6: d2 = sdDigit6(objectPos); break;
-        case 7: d2 = sdDigit7(objectPos); break;
-        case 8: d2 = sdDigit8(objectPos); break;
-        case 9: d2 = sdDigit9(objectPos); break;
-        case 10: d2 = sdDigit10(objectPos); break;
-        case 11: d2 = sdDigit11(objectPos); break;
+        case  0: d2 = sdDigit0(objectPos); break;
+        case  1: d2 = sdDigit1(objectPos); break;
+        case  2: d2 = sdDigit2(objectPos); break;
+        case  3: d2 = sdDigit3(objectPos); break;
+        case  4: d2 = sdDigit4(objectPos); break;
+        case  5: d2 = sdDigit5(objectPos); break;
+        case  6: d2 = sdDigit6(objectPos); break;
+        case  7: d2 = sdDigit7(objectPos); break;
+        case  8: d2 = sdDigit8(objectPos); break;
+        case  9: d2 = sdDigit9(objectPos); break;
+        case 10: d2 = sdDigitX(objectPos); break;
+        case 11: d2 = sdDigitE(objectPos); break;
         default: d2 = sdDigitPlaceholder(objectPos); break;
     }
 
