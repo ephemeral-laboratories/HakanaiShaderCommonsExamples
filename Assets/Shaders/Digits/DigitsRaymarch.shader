@@ -1,4 +1,4 @@
-Shader "Trejkaz/Raymarch/Digits"
+Shader "Ephemeral Laboratories/Raymarch/Digits"
 {
     Properties
     {

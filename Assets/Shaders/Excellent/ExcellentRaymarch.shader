@@ -1,4 +1,4 @@
-Shader "Trejkaz/Raymarch/Excellent Icon"
+Shader "Ephemeral Laboratories/Raymarch/Excellent Icon"
 {
     Properties
     {

@@ -1,4 +1,4 @@
-Shader "Hakanai/Magic Die V4"
+Shader "Ephemeral Laboratories/Magic Die V4"
 {
     Properties
     {
