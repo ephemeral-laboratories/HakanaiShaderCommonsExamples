@@ -1,8 +1,8 @@
 ﻿
-#include "../Common/ELDistanceFunctions.cginc"
-#include "../Common/ELGeometry.cginc"
-#include "../Common/ELMathUtilities.cginc"
-#include "../Common/ELRaymarchBase.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELDistanceFunctions.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELGeometry.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELMathUtilities.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELRaymarchBase.cginc"
 #include "UnityCG.cginc"
 // #include "Hilbert2D.cginc"
 #include "Hilbert3D.cginc"

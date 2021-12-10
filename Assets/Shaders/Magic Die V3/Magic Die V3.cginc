@@ -1,6 +1,6 @@
 
-#include "../Common/ELRaycastBase.cginc"
-#include "../Common/ELIntersectionFunctions.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELRaycastBase.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELIntersectionFunctions.cginc"
 
 
 ////////////////////////////////////////////////////////////////////////////////

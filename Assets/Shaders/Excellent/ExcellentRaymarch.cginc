@@ -1,8 +1,8 @@
 
-#include "../Common/ELDistanceFunctions.cginc"
-#include "../Common/ELGeometry.cginc"
-#include "../Common/ELMathUtilities.cginc"
-#include "../Common/ELRaymarchBase.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELDistanceFunctions.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELGeometry.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELMathUtilities.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELRaymarchBase.cginc"
 #include "StarnestBase.cginc"
 #include "UnityCG.cginc"
 
@@ -13,7 +13,7 @@ uniform float _Glossiness1;
 float sdStarPrism(float3 objectPos, float scale)
 {
     objectPos.xy = pModRotate(objectPos.xy, UNITY_HALF_PI);
-    objectPos.xy = pModPolar(objectPos.xy, 5.0);
+    pModPolar(objectPos.xy, 5.0);
     objectPos -= float3(0.1, 0.0, 0.0);
     objectPos.xy = pModRotate(objectPos.xy, -UNITY_HALF_PI);
 

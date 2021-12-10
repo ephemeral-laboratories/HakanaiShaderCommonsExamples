@@ -88,7 +88,7 @@
             #pragma skip_variants FOG_LINEAR FOG_EXP FOG_EXP2
             #pragma multi_compile_shadowcaster
             #pragma target 4.0
-            #include "ExcellentRaymarch.cginc"
+            #include "MengerSpongeRaymarch.cginc"
             ENDCG
         }
 

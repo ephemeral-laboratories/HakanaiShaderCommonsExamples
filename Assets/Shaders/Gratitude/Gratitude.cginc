@@ -1,11 +1,11 @@
 #ifndef GRATITUDE_CGINC
 #define GRATITUDE_CGINC
 
-#include "../Common/ELMathUtilities.cginc"
-#include "../Common/ELUnityUtilities.cginc"
-#include "../Common/ELDistanceFunctions.cginc"
-#include "../Common/ELScuttledUnityLighting.cginc"
-#include "../Common/ELRaymarchBase.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELMathUtilities.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELUnityUtilities.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELDistanceFunctions.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELScuttledUnityLighting.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELRaymarchBase.cginc"
 
 #define TORUS_SCALE 0.25
 float Map(float3 pos)

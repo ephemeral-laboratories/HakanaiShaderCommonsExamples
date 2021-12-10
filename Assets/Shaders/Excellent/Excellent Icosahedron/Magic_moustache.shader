@@ -20,7 +20,7 @@
         CGPROGRAM
         #pragma surface Surface Standard vertex:vert addshadow fullforwardshadows
         #pragma target 4.0
-        #include "../../Common/ELMathUtilities.cginc"
+        #include "Common/garden.ephemeral.shader.commons/ELMathUtilities.cginc"
         sampler2D _MainTex;
         float4 _Pivot;
 

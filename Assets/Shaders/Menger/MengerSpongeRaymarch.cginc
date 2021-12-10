@@ -1,10 +1,9 @@
 
-
-#include "../Common/ELColorConversions.cginc"
-#include "../Common/ELDistanceFunctions.cginc"
-#include "../Common/ELGeometry.cginc"
-#include "../Common/ELMathUtilities.cginc"
-#include "../Common/ELRaymarchBase.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELColorConversions.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELDistanceFunctions.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELGeometry.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELMathUtilities.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELRaymarchBase.cginc"
 #include "UnityCG.cginc"
 
 // #define FRACTAL_ORDER 9
@@ -147,9 +146,9 @@ void ELDecodeMaterial(ELRaycastBaseFragmentInput input, float material, inout Su
     float4 colour = saturate(lerp(_Colour, _TintColour, _TintMultiplier * material / FRACTAL_ORDER));
 
     // Hue rotation
-    float3 temp = ELRGBtoHSV(colour.rgb);
+    float3 temp = ELRgbToHsv(colour.rgb);
     temp.r = frac(temp.r + _HueRotationRate * _Time);
-    temp = ELHSVtoRGB(temp);
+    temp = ELHsvToRgb(temp);
     colour = float4(temp, colour.a);
 
     output.Albedo = colour.rgb;

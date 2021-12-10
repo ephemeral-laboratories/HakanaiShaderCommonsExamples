@@ -1,7 +1,7 @@
 
-#include "../Common/ELRaycastBase.cginc"
-#include "../Common/ELRaymarchCommon.cginc"
-#include "../Common/ELDistanceFunctions.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELRaycastBase.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELRaymarchCommon.cginc"
+#include "Packages/garden.ephemeral.shader.commons/ELDistanceFunctions.cginc"
 
 
 ////////////////////////////////////////////////////////////////////////////////
