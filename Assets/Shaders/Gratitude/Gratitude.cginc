@@ -77,7 +77,7 @@ float4 Fragment(ELRaycastBaseFragmentInput input, bool frontFace : SV_IsFrontFac
     SurfaceOutputStandard surfaceOutput = ELInitSurfaceOutput(input.objectNormal);
     surfaceOutput.Smoothness = 1.0 - color;
     surfaceOutput.Alpha = 0.4;
-    return ELSurfaceFragment(surfaceOutput, input.objectPos, input.objectNormal);
+    return ELSurfaceFragment(surfaceOutput, input, input.objectPos, input.objectNormal);
 }
 
 #endif

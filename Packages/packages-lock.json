@@ -157,11 +157,11 @@
       "url": "https://packages.unity.com"
     },
     "garden.ephemeral.shader.commons": {
-      "version": "https://github.com/ephemeral-laboratories/HakanaiShaderCommons.git#v0.2.0",
+      "version": "https://github.com/ephemeral-laboratories/HakanaiShaderCommons.git#v0.3.1",
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "64182d6c6f4de6f3937708a72576754fa253f216"
+      "hash": "7eaba26327ec115fb7f8b17bc7e321721f9ad711"
     },
     "nuget.mono-cecil": {
       "version": "0.1.6-preview",
