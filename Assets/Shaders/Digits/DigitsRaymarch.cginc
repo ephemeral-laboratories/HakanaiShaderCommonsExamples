@@ -117,29 +117,36 @@ float sdDigitPlaceholder(float3 objectPos)
     return udPoint(objectPos - 0.5);
 }
 
-float sdDigit(float3 objectPos, float digit)
+float sdDigit(float3 objectPos, uint digit)
 {
-    float d2;
+    float d;
 
-    // TODO: Digit morphing
-    switch ((uint) floor(digit))
+    switch (digit)
     {
-        case  0: d2 = sdDigit0(objectPos); break;
-        case  1: d2 = sdDigit1(objectPos); break;
-        case  2: d2 = sdDigit2(objectPos); break;
-        case  3: d2 = sdDigit3(objectPos); break;
-        case  4: d2 = sdDigit4(objectPos); break;
-        case  5: d2 = sdDigit5(objectPos); break;
-        case  6: d2 = sdDigit6(objectPos); break;
-        case  7: d2 = sdDigit7(objectPos); break;
-        case  8: d2 = sdDigit8(objectPos); break;
-        case  9: d2 = sdDigit9(objectPos); break;
-        case 10: d2 = sdDigitX(objectPos); break;
-        case 11: d2 = sdDigitE(objectPos); break;
-        default: d2 = sdDigitPlaceholder(objectPos); break;
+        case  0: d = sdDigit0(objectPos); break;
+        case  1: d = sdDigit1(objectPos); break;
+        case  2: d = sdDigit2(objectPos); break;
+        case  3: d = sdDigit3(objectPos); break;
+        case  4: d = sdDigit4(objectPos); break;
+        case  5: d = sdDigit5(objectPos); break;
+        case  6: d = sdDigit6(objectPos); break;
+        case  7: d = sdDigit7(objectPos); break;
+        case  8: d = sdDigit8(objectPos); break;
+        case  9: d = sdDigit9(objectPos); break;
+        case 10: d = sdDigitX(objectPos); break;
+        case 11: d = sdDigitE(objectPos); break;
+        default: d = sdDigitPlaceholder(objectPos); break;
     }
 
-    return length(float2(d2, objectPos.z)) - wireRadius;
+    return length(float2(d, objectPos.z)) - wireRadius;
+}
+
+float sdDigit(float3 objectPos, float digit)
+{
+    uint digitHere = (uint) floor(digit);
+    uint digitNext = (digitHere + 1) % 12;
+    float ratio = frac(digit);
+    return lerp(sdDigit(objectPos, digitHere), sdDigit(objectPos, digitNext), ratio);
 }
 
 // Implementing function defined in `ELRaymarchCommon.cginc`
@@ -153,7 +160,9 @@ void ELBoundingBox(out float3 corner1, out float3 corner2)
 float2 ELMap(float3 objectPos)
 {
     objectPos.x += 0.5 * 0.08 * 11.0;
-    uint cell = (uint) pModInterval1(objectPos.x, 0.08, 0.0, 11.0);
+    float cell = pModInterval1(objectPos.x, 0.08, 0.0, 11.0);
+    cell += _Time[1];
+    cell = fmod(cell, 12.0);
     objectPos *= 15.0;
     float d = sdDigit(objectPos, cell);
     if (cell > 0)
